@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Assistent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Assistent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1020">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' fill='url(%23g)'/%3E%3Crect x='72' y='36' width='36' height='70' rx='18' fill='white'/%3E%3Cpath d='M52 88a38 38 0 0 0 76 0' stroke='white' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3Crect x='86' y='126' width='8' height='24' rx='4' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f2f2f7;--card:rgba(255,255,255,.82);--card2:rgba(120,120,128,.12);--txt:#111318;--mut:#6b7280;--line:rgba(60,60,67,.16);--acc:#6366f1;--ok:#22c55e;--err:#ef4444;--bar:rgba(250,250,252,.86);--shadow:0 6px 24px rgba(30,30,60,.08)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#07090f;--card:rgba(28,32,48,.78);--card2:rgba(150,160,200,.14);--txt:#eef1fb;--mut:#8b94b5;--line:rgba(180,190,230,.16);--bar:rgba(14,17,28,.86);--shadow:0 6px 24px rgba(0,0,0,.4)}}
+:root[data-theme=dark]{--bg:#07090f;--card:rgba(28,32,48,.78);--card2:rgba(150,160,200,.14);--txt:#eef1fb;--mut:#8b94b5;--line:rgba(180,190,230,.16);--bar:rgba(14,17,28,.86);--shadow:0 6px 24px rgba(0,0,0,.4)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(900px 500px at 85% -10%,color-mix(in srgb,var(--acc) 28%,transparent),transparent 60%),radial-gradient(700px 400px at -10% 10%,color-mix(in srgb,#22d3ee 18%,transparent),transparent 60%),var(--bg);overscroll-behavior:none}
+#app{height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{display:flex;align-items:flex-end;justify-content:space-between;padding:10px 20px 4px}
+header .sub{color:var(--mut);font-size:14px}
+header h1{margin:0;font-size:32px;letter-spacing:-.5px}
+select,input,textarea,button{font:inherit;color:var(--txt)}
+select{background:var(--card2);border:0;border-radius:12px;padding:8px 10px;max-width:46vw}
+main{flex:1;overflow:auto;padding:8px 16px calc(96px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.tab{display:none}.tab.on{display:block;animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:20px;padding:14px;margin:10px 0;box-shadow:var(--shadow)}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:18px 6px 4px;font-weight:600}
+.small{color:var(--mut);font-size:13px;line-height:1.4}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+input[type=text],input:not([type]),input[type=search],input[type=url],textarea{width:100%;background:var(--card2);border:0;border-radius:14px;padding:13px 14px;outline:none;font-size:16px}
+textarea{resize:vertical;min-height:70px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:14px;padding:12px 16px;font-weight:600;white-space:nowrap}
+.btn.sec{background:var(--card2);color:var(--txt)}
+.btn.red{background:rgba(239,68,68,.16);color:var(--err)}
+.btn:active,.tile:active,.chip:active{transform:scale(.96)}
+.x{background:none;border:0;color:var(--mut);font-size:18px;padding:6px 8px}
+/* Mic */
+.mic-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px 0 6px}
+#mic{position:relative;width:128px;height:128px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--acc),#22d3ee);box-shadow:0 10px 40px color-mix(in srgb,var(--acc) 55%,transparent);display:grid;place-items:center;transition:transform .15s}
+#mic svg{width:54px;height:54px;fill:#fff}
+#mic .bars{display:none;gap:5px;align-items:center;height:54px}
+#mic .bars i{display:block;width:7px;border-radius:4px;background:#fff;height:12px;animation:bar 1s ease-in-out infinite}
+#mic .bars i:nth-child(2){animation-delay:.12s}#mic .bars i:nth-child(3){animation-delay:.24s}#mic .bars i:nth-child(4){animation-delay:.36s}#mic .bars i:nth-child(5){animation-delay:.48s}
+@keyframes bar{0%,100%{height:10px}50%{height:46px}}
+#mic.live{background:linear-gradient(135deg,#ef4444,#f97316);animation:pulse 1.4s infinite}
+#mic.live svg{display:none}#mic.live .bars{display:flex}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}100%{box-shadow:0 0 0 36px rgba(239,68,68,0)}}
+#heard{font-size:19px;min-height:26px;text-align:center;font-weight:500;padding:0 10px}
+#status{color:var(--mut);min-height:20px;text-align:center;font-size:14px;padding:0 10px}
+/* Tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 4px 8px;text-align:center;font-size:12px;box-shadow:var(--shadow);border-width:1px;color:var(--txt)}
+.tile b{display:block;font-size:26px;margin-bottom:2px;font-weight:400}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{background:var(--card2);border:0;border-radius:999px;padding:8px 14px;font-size:14px;white-space:nowrap}
+/* Messages */
+.msg .u{color:var(--acc);font-weight:600;font-size:15px}
+.msg .a{margin-top:4px;white-space:pre-wrap;word-break:break-word;line-height:1.4}
+.open{display:inline-block;margin:8px 8px 0 0;background:var(--ok);color:#04230f;font-weight:700;border-radius:12px;padding:9px 14px;text-decoration:none;border:0;font-size:15px}
+.weather{margin-top:8px;border-radius:16px;padding:12px;background:var(--card2)}
+.weather .big{font-size:40px;font-weight:300}
+.weather .fc{display:flex;gap:6px;margin-top:8px}
+.weather .fc div{flex:1;text-align:center;font-size:13px;background:var(--card2);border-radius:12px;padding:6px 2px}
+/* Timer */
+.timer{display:flex;justify-content:space-between;align-items:center}
+.timer b{font-size:26px;font-variant-numeric:tabular-nums}
+/* Tables */
+.scroll{overflow:auto;border-radius:14px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0}
+th{background:var(--card2)}
+td input,th input{background:transparent;border-radius:0;min-width:92px;padding:11px 9px;font-size:15px}
+th input{font-weight:700}
+tfoot td{background:var(--card2);padding:9px;font-weight:700;font-size:14px}
+td.d,th.d{width:36px;min-width:36px;text-align:center}
+.tabs-t{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
+.tabs-t .chip.on{background:var(--acc);color:#fff}
+/* Lists */
+.lh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.lh b{flex:1;font-size:18px}
+.item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.item input[type=checkbox]{width:24px;height:24px;accent-color:var(--acc);flex:none}
+.item span{flex:1;word-break:break-word}
+.item.done span{text-decoration:line-through;color:var(--mut)}
+/* Notes */
+.note{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.note span{white-space:pre-wrap;word-break:break-word;flex:1;line-height:1.4}
+.note time{display:block;color:var(--mut);font-size:12px;margin-top:4px}
+/* Settings */
+.set{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.set:first-child{border-top:0}
+.set label{flex:1}
+.sw{appearance:none;-webkit-appearance:none;width:51px;height:31px;border-radius:99px;background:var(--card2);position:relative;transition:.2s;flex:none;border:0}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:.2s}
+.sw:checked{background:var(--ok)}.sw:checked::after{left:22px}
+.cols{display:flex;gap:10px}
+.col{width:30px;height:30px;border-radius:50%;border:3px solid transparent}
+.col.on{border-color:var(--txt)}
+details summary{cursor:pointer;font-weight:600;padding:4px 0}
+ol,ul{padding-left:20px;margin:8px 0;line-height:1.5}
+/* Tabbar */
+#bar{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bar);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:10}
+#bar button{flex:1;background:none;border:0;color:var(--mut);font-size:11px;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+#bar button b{font-size:23px;font-weight:400;filter:grayscale(1);opacity:.7}
+#bar button.on{color:var(--acc)}#bar button.on b{filter:none;opacity:1}
+#fab{position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--acc),#22d3ee);box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;place-items:center;z-index:11}
+#fab svg{width:28px;height:28px;fill:#fff}
+#fab.live{background:linear-gradient(135deg,#ef4444,#f97316)}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));background:var(--bar);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:.25s;z-index:20;text-align:center}
+#toast.on{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div><div class="sub" id="greet"></div><h1>Assistent</h1></div>
+  <select id="lang" aria-label="Sprache"><option value="de-DE">🇩🇪 Deutsch</option><option value="ru-RU">🇷🇺 Русский</option><option value="en-US">🇬🇧 English</option><option value="pl-PL">🇵🇱 Polski</option></select>
+</header>
+<main>
+  <!-- ASSISTENT -->
+  <section class="tab on" id="t-assist">
+    <div class="mic-wrap">
+      <button id="mic" aria-label="Sprechen"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg><span class="bars"><i></i><i></i><i></i><i></i><i></i></span></button>
+      <div id="heard"></div>
+      <div id="status">Tippe aufs Mikrofon und sprich</div>
+    </div>
+    <div class="row"><input id="txt" type="text" placeholder="…oder Befehl tippen" autocomplete="off" autocapitalize="sentences" enterkeyhint="send"><button class="btn" id="go">Los</button></div>
+    <div class="chips" id="chips"></div>
+    <div id="timers"></div>
+    <h2>Schnellzugriff</h2>
+    <div class="tiles" id="tiles"></div>
+    <h2>Verlauf</h2>
+    <div id="log"></div>
+    <div class="row" style="justify-content:center;margin-top:6px"><button class="btn sec" id="clearLog">Verlauf löschen</button></div>
+  </section>
+
+  <!-- LISTEN -->
+  <section class="tab" id="t-lists">
+    <div id="listsView"></div>
+    <div class="row" style="margin-top:6px"><button class="btn sec" id="newList">+ Neue Liste</button></div>
+    <p class="small">Sag z. B. „Füge Milch zur Einkaufsliste hinzu“, „Aufgabe Zahnarzt anrufen“, „Erledigt Milch“ oder „Was steht auf der Einkaufsliste“.</p>
+  </section>
+
+  <!-- TABELLEN -->
+  <section class="tab" id="t-tables">
+    <div class="tabs-t" id="ttabs"></div>
+    <div id="tview"></div>
+    <div class="row wrap" style="margin-top:10px">
+      <button class="btn sec" id="newT">+ Tabelle</button>
+      <button class="btn sec" id="addRow">+ Zeile</button>
+      <button class="btn sec" id="addCol">+ Spalte</button>
+      <button class="btn" id="exp">⬇ CSV</button>
+      <button class="btn red" id="delT">Löschen</button>
+    </div>
+    <p class="small">Sag z. B. „Erstelle Tabelle Einkauf mit Spalten Artikel, Menge, Preis“, „Zeile hinzufügen Milch, 2, 1,20“, „Sortiere nach Preis absteigend“ oder „Summe Preis“. Unter jeder Spalte mit Zahlen steht automatisch die Summe.</p>
+  </section>
+
+  <!-- NOTIZEN -->
+  <section class="tab" id="t-notes">
+    <div class="card"><textarea id="newNote" placeholder="Neue Notiz …"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="addNote">Speichern</button></div></div>
+    <input type="search" id="noteQ" placeholder="🔍 Notizen durchsuchen">
+    <div id="nlist"></div>
+    <p class="small">Sag z. B. „Notiz Geburtstag von Anna kaufen“.</p>
+  </section>
+
+  <!-- MEHR -->
+  <section class="tab" id="t-more">
+    <h2>Allgemein</h2>
+    <div class="card">
+      <div class="set"><label>Dein Name</label><input id="cName" style="max-width:55%" placeholder="optional"></div>
+      <div class="set"><label>Heimatstadt (Wetter)</label><input id="cCity" style="max-width:55%" placeholder="z. B. Freiburg"></div>
+      <div class="set"><label>Darstellung</label><select id="cTheme"><option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option></select></div>
+      <div class="set"><label>Farbe</label><div class="cols" id="cols"></div></div>
+    </div>
+    <h2>Sprache & Ausgabe</h2>
+    <div class="card">
+      <div class="set"><label>Antworten vorlesen</label><input type="checkbox" class="sw" id="cSpeak"></div>
+      <div class="set"><label>Stimme</label><select id="cVoice"></select></div>
+      <div class="set"><label>Sprechtempo</label><input type="range" id="cRate" min="0.6" max="1.4" step="0.1" style="max-width:45%"></div>
+      <div class="set"><label>Dauerhören<br><span class="small">nach jedem Befehl weiter zuhören</span></label><input type="checkbox" class="sw" id="cLoop"></div>
+      <div class="set"><label>Apps &amp; Links automatisch öffnen<br><span class="small">sonst nur Button anzeigen</span></label><input type="checkbox" class="sw" id="cAuto"></div>
+    </div>
+    <h2>Eigene Befehle</h2>
+    <div class="card">
+      <div id="customList"></div>
+      <div class="small" style="margin:6px 0">Wort sagen → Link/App öffnen. Mit <b>{q}</b> wird der Rest des Satzes eingesetzt, z. B. Wort „ebay“ → <code>https://www.ebay.de/sch/i.html?_nkw={q}</code></div>
+      <input id="cuIcon" style="max-width:90px;margin-bottom:8px" placeholder="⚡ Icon">
+      <input id="cuWord" placeholder="Sprachbefehl, z. B. Mama anrufen" style="margin-bottom:8px">
+      <input id="cuUrl" type="url" placeholder="Link oder App, z. B. tel:+49… oder https://…" style="margin-bottom:8px">
+      <button class="btn" id="cuAdd">Befehl hinzufügen</button>
+    </div>
+    <h2>Siri einrichten</h2>
+    <div class="card">
+      <details open><summary>„Hey Siri, öffne Assistent“</summary>
+        <ol>
+          <li>Diese Seite in <b>Safari</b> öffnen (Server mit https).</li>
+          <li>Teilen-Symbol › <b>Zum Home-Bildschirm</b> › Name: <b>Assistent</b>.</li>
+          <li>Jetzt funktioniert „Hey Siri, öffne Assistent“.</li>
+          <li>Optional: Kurzbefehle-App › neuer Kurzbefehl „Assistent“ › Aktion <i>URL öffnen</i> mit deiner Adresse + <code>?listen=1</code>.</li>
+        </ol>
+        <div class="small">Mikrofon &amp; Spracherkennung beim ersten Start erlauben. Falls die Erkennung im Home-Screen-Modus nicht startet: Seite normal in Safari öffnen.</div>
+      </details>
+    </div>
+    <h2>Daten</h2>
+    <div class="card">
+      <div class="row wrap"><button class="btn sec" id="bkExp">⬇ Backup speichern</button><button class="btn sec" id="bkImp">⬆ Backup laden</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+      <div class="small" style="margin-top:8px">Alles bleibt lokal auf deinem Gerät (nur Wetter, Suche &amp; Übersetzung öffnen/rufen externe Dienste).</div>
+    </div>
+    <h2>Alle Befehle</h2>
+    <div class="card"><div class="msg"><div class="a" id="helpText"></div></div></div>
+  </section>
+</main>
+
+<nav id="bar">
+  <button data-t="assist" class="on"><b>🎙️</b>Assistent</button>
+  <button data-t="lists"><b>✅</b>Listen</button>
+  <button data-t="tables"><b>📊</b>Tabellen</button>
+  <button data-t="notes"><b>📝</b>Notizen</button>
+  <button data-t="more"><b>⚙️</b>Mehr</button>
+</nav>
+<button id="fab" aria-label="Sprechen"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button>
+<div id="toast"></div>
+</div>
+
+<script>
+(()=>{
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const S={
+  get(k,d){try{const v=localStorage.getItem('as2_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('as2_'+k,JSON.stringify(v))}catch(e){}}
+};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+const enc=encodeURIComponent;
+const uid=()=>Math.random().toString(36).slice(2,10);
+
+/* ================= Zustand ================= */
+const dl=(navigator.language||'de').slice(0,2);
+let cfg=Object.assign({lang:dl==='ru'?'ru-RU':dl==='en'?'en-US':dl==='pl'?'pl-PL':'de-DE',theme:'auto',accent:'#6366f1',speak:true,rate:1,voice:'',loop:false,auto:true,name:'',city:''},S.get('cfg',{}));
+let tables=S.get('tables',null); if(tables===null){try{tables=JSON.parse(localStorage.getItem('as_tables'))||[]}catch(e){tables=[]}}
+let active=S.get('active',0);
+let notes=S.get('notes',null); if(notes===null){try{notes=(JSON.parse(localStorage.getItem('as_notes'))||[]).map(t=>({id:uid(),t,ts:Date.now()}))}catch(e){notes=[]}}
+let lists=S.get('lists',[{name:'Aufgaben',items:[]},{name:'Einkaufsliste',items:[]}]);
+let hist=S.get('hist',[]);
+let customs=S.get('customs',[]);
+let timers=S.get('timers',[]);
+const persist=()=>{S.set('cfg',cfg);S.set('tables',tables);S.set('active',active);S.set('notes',notes);S.set('lists',lists);S.set('hist',hist.slice(0,40));S.set('customs',customs);S.set('timers',timers)};
+
+/* ================= Theme ================= */
+const ACCENTS=['#6366f1','#0a84ff','#30d158','#ff9f0a','#ff375f','#bf5af2'];
+function applyTheme(){
+  const r=document.documentElement;
+  if(cfg.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',cfg.theme);
+  r.style.setProperty('--acc',cfg.accent);
+}
+
+/* ================= UI-Helfer ================= */
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200)}
+function status(t){$('#status').textContent=t}
+let curTab='assist';
+function showTab(n){
+  curTab=n;
+  $$('#bar button').forEach(b=>b.classList.toggle('on',b.dataset.t===n));
+  $$('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+n));
+  $('#fab').style.display=n==='assist'?'none':'grid';
+  $('main').scrollTop=0;
+}
+$$('#bar button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+function greet(){
+  const h=new Date().getHours();
+  const g=h<5?'Gute Nacht':h<11?'Guten Morgen':h<17?'Guten Tag':'Guten Abend';
+  $('#greet').textContent=g+(cfg.name?', '+cfg.name:'');
+}
+
+/* ================= Sprachausgabe ================= */
+let voices=[];
+function loadVoices(){
+  try{voices=speechSynthesis.getVoices()}catch(e){voices=[]}
+  const sel=$('#cVoice');if(!sel)return;
+  const lg=cfg.lang.slice(0,2);
+  const list=voices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith(lg));
+  sel.innerHTML='<option value="">Standard</option>'+list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+  sel.value=cfg.voice;
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function say(t){
+  if(!cfg.speak||!('speechSynthesis' in window))return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(t).replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu,''));
+    u.lang=cfg.lang;u.rate=cfg.rate;
+    const v=voices.find(v=>v.name===cfg.voice);if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+let ac;
+function unlockAudio(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}}
+function beep(){
+  if(!ac)return;
+  [0,.35,.7].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.25;o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.2)});
+}
+
+/* ================= Verlauf ================= */
+function addMsg(m){hist.unshift(m);if(hist.length>40)hist.length=40;persist();renderHist()}
+function weatherEl(w){
+  const d=document.createElement('div');d.className='weather';
+  let h=`<div class="row" style="justify-content:space-between"><div><div class="small">${esc(w.name)}</div>`;
+  h+=w.cur?`<div class="big">${esc(w.cur.t)}°</div><div>${w.cur.e} ${esc(w.cur.txt)}</div>`:`<div>${w.rows[w.off]?w.rows[w.off].e:''} ${w.rows[w.off]?esc(w.rows[w.off].txt):''}</div>`;
+  h+='</div></div><div class="fc">';
+  w.rows.forEach((r,i)=>{h+=`<div style="${i===w.off?'outline:2px solid var(--acc)':''}"><b>${esc(r.day)}</b><br>${r.e}<br>${r.tmax}° / ${r.tmin}°<br>💧${r.p}%</div>`});
+  h+='</div>';d.innerHTML=h;return d;
+}
+async function shareIcs(text,name){
+  const f=new File([text],(name||'termin')+'.ics',{type:'text/calendar'});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e.name==='AbortError')return}
+  location.href=URL.createObjectURL(new Blob([text],{type:'text/calendar'}));
+}
+function renderHist(){
+  const el=$('#log');el.innerHTML='';
+  if(!hist.length){el.innerHTML='<div class="card small">Noch nichts gesagt. Probiere einen der Vorschläge oben.</div>';return}
+  hist.slice(0,25).forEach(m=>{
+    const d=document.createElement('div');d.className='card msg';
+    d.innerHTML='<div class="u"></div><div class="a"></div>';
+    d.firstChild.textContent='› '+m.u;
+    const a=d.lastChild;a.textContent=m.a;
+    if(m.w)a.appendChild(weatherEl(m.w));
+    if(m.link){const l=document.createElement('a');l.className='open';l.href=m.link;if(/^https?:/.test(m.link))l.target='_blank';l.textContent=m.label||'Öffnen';a.appendChild(l)}
+    if(m.ics){const b=document.createElement('button');b.className='open';b.textContent='📅 Zum Kalender hinzufügen';b.onclick=()=>shareIcs(m.ics,m.name);a.appendChild(b)}
+    el.appendChild(d);
+  });
+}
+$('#clearLog').onclick=()=>{hist=[];persist();renderHist()};
+
+/* ================= Hilfsfunktionen ================= */
+const NUMW={null:0,eins:1,ein:1,eine:1,einen:1,einem:1,zwei:2,drei:3,vier:4,fünf:5,sechs:6,sieben:7,acht:8,neun:9,zehn:10,elf:11,zwölf:12,dreizehn:13,vierzehn:14,fünfzehn:15,sechzehn:16,siebzehn:17,achtzehn:18,neunzehn:19,zwanzig:20,dreißig:30,vierzig:40,fünfzig:50,sechzig:60,neunzig:90,hundert:100};
+function toNum(s){s=String(s).trim().toLowerCase();if(/^-?\d+([.,]\d+)?$/.test(s))return parseFloat(s.replace(',','.'));return NUMW[s]!==undefined?NUMW[s]:NaN}
+function parseNum(s){
+  s=String(s).trim().replace(/\s/g,'').replace(/[€$£]|chf|pln|eur/gi,'');
+  if(s==='')return NaN;
+  if(s.includes('.')&&s.includes(','))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');
+  return /^-?\d+(\.\d+)?$/.test(s)?parseFloat(s):NaN;
+}
+const fmt=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:4});
+function splitList(s){
+  s=s.trim();
+  let p=s.split(/\s*;\s*|\s*,\s+|\s+und\s+/).map(x=>x.trim()).filter(Boolean);
+  if(p.length===1&&/\s/.test(s))p=s.split(/\s+/);
+  return p;
+}
+function clean(s){
+  return s.replace(/^(?:hey |hi |hallo |okay |ok )?(?:assistent|assistant)[,:]?\s*/i,'')
+   .replace(/\b(bitte|mal|doch|eben)\b/gi,'')
+   .replace(/^(?:kannst du|könntest du|würdest du|ich möchte|ich will|ich brauche|ich hätte gern|can you|please)\s+/i,'')
+   .replace(/\s+/g,' ').replace(/[.!?]+$/,'').trim();
+}
+function share(blob,name,type){
+  const f=new File([blob],name,{type});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(()=>{});return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ================= Apps ================= */
+const APPS={
+  'kalender':['calshow://','Kalender'],'calendar':['calshow://','Kalender'],'календарь':['calshow://','Kalender'],
+  'karten':['maps://','Karten'],'maps':['maps://','Karten'],'apple karten':['maps://','Karten'],
+  'mail':['message://','Mail'],'e-mail':['message://','Mail'],'emails':['message://','Mail'],'почта':['message://','Mail'],
+  'nachrichten':['sms://','Nachrichten'],'sms':['sms://','Nachrichten'],'imessage':['sms://','Nachrichten'],
+  'telefon':['tel://','Telefon'],'facetime':['facetime://','FaceTime'],
+  'erinnerungen':['x-apple-reminderkit://','Erinnerungen'],
+  'notizen':['mobilenotes://','Notizen'],
+  'musik':['music://','Musik'],'apple music':['music://','Musik'],'podcasts':['podcasts://','Podcasts'],
+  'fotos':['photos-redirect://','Fotos'],'bilder':['photos-redirect://','Fotos'],
+  'kurzbefehle':['shortcuts://','Kurzbefehle'],'shortcuts':['shortcuts://','Kurzbefehle'],
+  'wetter':['weather://','Wetter'],'aktien':['stocks://','Aktien'],
+  'bücher':['ibooks://','Bücher'],'books':['ibooks://','Bücher'],
+  'gesundheit':['x-apple-health://','Gesundheit'],'health':['x-apple-health://','Gesundheit'],
+  'home':['x-hm://','Home'],'wo ist':['findmy://','Wo ist?'],'find my':['findmy://','Wo ist?'],
+  'tv':['videos://','TV'],'freeform':['freeform://','Freeform'],'dateien':['shareddocuments://','Dateien'],'files':['shareddocuments://','Dateien'],
+  'app store':['itms-apps://','App Store'],'wallet':['shoebox://','Wallet'],
+  'whatsapp':['whatsapp://','WhatsApp'],'telegram':['tg://','Telegram'],'signal':['sgnl://','Signal'],
+  'youtube':['youtube://','YouTube'],'spotify':['spotify://','Spotify'],'netflix':['nflx://','Netflix'],
+  'instagram':['instagram://','Instagram'],'tiktok':['snssdk1233://','TikTok'],'facebook':['fb://','Facebook'],
+  'chrome':['googlechromes://www.google.com','Chrome'],'safari':['https://www.google.com','Safari'],
+  'google':['https://www.google.com','Google'],'google maps':['comgooglemaps://','Google Maps']
+};
+function launch(url){
+  if(/^https?:/.test(url)){let w=null;try{w=window.open(url,'_blank')}catch(e){}if(!w)location.href=url}
+  else location.href=url;
+}
+
+/* ================= Timer ================= */
+function renderTimers(){
+  const el=$('#timers');el.innerHTML='';
+  const now=Date.now();
+  timers.forEach(t=>{
+    const s=Math.max(0,Math.round((t.end-now)/1000));
+    const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;
+    const txt=(h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(sec).padStart(2,'0');
+    const d=document.createElement('div');d.className='card timer';
+    d.innerHTML=`<div><div class="small">⏱ ${esc(t.label)}</div><b>${txt}</b></div><button class="x">✕</button>`;
+    d.querySelector('button').onclick=()=>{timers=timers.filter(x=>x.id!==t.id);persist();renderTimers()};
+    el.appendChild(d);
+  });
+}
+function addTimer(sec,label){
+  timers.push({id:uid(),end:Date.now()+sec*1000,label});persist();renderTimers();
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
+}
+function fire(t){
+  const m='⏰ Timer abgelaufen: '+t.label;
+  addMsg({u:'Timer',a:m});say(m);beep();toast(m);
+  try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
+  try{if('Notification' in window&&Notification.permission==='granted'&&document.hidden)new Notification(m)}catch(e){}
+}
+function tick(){
+  const now=Date.now();let ch=false;
+  timers=timers.filter(t=>{if(t.end<=now){fire(t);ch=true;return false}return true});
+  if(ch)persist();
+  if(timers.length||ch)renderTimers();
+}
+setInterval(tick,1000);document.addEventListener('visibilitychange',tick);
+function fmtDur(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return [h?h+' Std.':'',m?m+' Min.':'',x?x+' Sek.':''].filter(Boolean).join(' ')}
+function parseDur(t){
+  let s=0,found=false,rest=t;
+  if(/halbe stunde/.test(t)){s+=1800;found=true;rest=rest.replace(/(?:eine\s+)?halbe stunde/,' ')}
+  if(/viertelstunde/.test(t)){s+=900;found=true;rest=rest.replace(/(?:eine\s+)?viertelstunde/,' ')}
+  const re=/(\d+(?:[.,]\d+)?|[a-zäöüß]+)\s*(sekunden?|sek\.?|minuten?|min\.?|stunden?|std\.?|seconds?|minutes?|hours?)/g;
+  let m;
+  while((m=re.exec(t))){
+    const n=toNum(m[1]);if(isNaN(n))continue;
+    const u=m[2][0]==='s'&&!/^sto?/.test(m[2])||/^sec/.test(m[2])?1:m[2][0]==='m'?60:3600;
+    s+=Math.round(n*u);found=true;rest=rest.replace(m[0],' ');
+  }
+  return found?{s,rest:rest.replace(/\s+/g,' ').trim()}:null;
+}
+
+/* ================= Datum / Termin ================= */
+const WD={sonntag:0,montag:1,dienstag:2,mittwoch:3,donnerstag:4,freitag:5,samstag:6,sonnabend:6};
+const MON={januar:0,februar:1,märz:2,april:3,mai:4,juni:5,juli:6,august:7,september:8,oktober:9,november:10,dezember:11};
+function parseWhen(t){
+  let s=' '+t.toLowerCase()+' ',d=new Date(),time=null,m;d.setHours(0,0,0,0);
+  const rm=x=>{s=s.replace(x,' ')};
+  if(/ übermorgen /.test(s)){d.setDate(d.getDate()+2);rm(/ übermorgen /)}
+  else if(/ morgen /.test(s)){d.setDate(d.getDate()+1);rm(/ morgen /)}
+  else if(/ heute /.test(s)){rm(/ heute /)}
+  else if((m=s.match(/ (?:(?:am|nächsten|nächste|kommenden) )*(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonnabend|sonntag) /))){
+    let diff=(WD[m[1]]-d.getDay()+7)%7;if(diff===0)diff=7;d.setDate(d.getDate()+diff);rm(m[0]);
+  }else if((m=s.match(/ (?:am )?(\d{1,2})\.\s?(\d{1,2})\.?(\d{2,4})? /))){
+    let y=m[3]?(m[3].length===2?2000+ +m[3]:+m[3]):d.getFullYear();
+    const nd=new Date(y,+m[2]-1,+m[1]);if(!m[3]&&nd<d)nd.setFullYear(y+1);d=nd;rm(m[0]);
+  }else if((m=s.match(/ (?:am )?(\d{1,2})\.? (januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember)(?: (\d{4}))? /))){
+    let y=m[3]?+m[3]:d.getFullYear();const nd=new Date(y,MON[m[2]],+m[1]);if(!m[3]&&nd<d)nd.setFullYear(y+1);d=nd;rm(m[0]);
+  }
+  let pm=/ (nachmittags|abends|nachts)/.test(s);rm(/ (nachmittags|abends|nachts|morgens|vormittags)/);
+  if((m=s.match(/ (?:um |gegen |ab )?halb (\d{1,2}|\w+) (?:uhr )?/))&&!isNaN(toNum(m[1]))){time={h:toNum(m[1])-1,m:30};rm(m[0])}
+  else if((m=s.match(/ (?:um )?viertel (nach|vor) (\d{1,2}|\w+) (?:uhr )?/))&&!isNaN(toNum(m[2]))){time=m[1]==='nach'?{h:toNum(m[2]),m:15}:{h:toNum(m[2])-1,m:45};rm(m[0])}
+  else if((m=s.match(/ (?:um |gegen |ab )?(\d{1,2})(?::|\.)(\d{2})(?: uhr)? /))){time={h:+m[1],m:+m[2]};rm(m[0])}
+  else if((m=s.match(/ (?:um |gegen |ab )?(\d{1,2}|\w+) uhr(?: (\d{1,2}))? /))&&!isNaN(toNum(m[1]))){time={h:toNum(m[1]),m:m[2]?+m[2]:0};rm(m[0])}
+  if(time&&pm&&time.h<12)time.h+=12;
+  if(time&&(time.h>23||time.m>59))time=null;
+  return {date:d,time,rest:s.replace(/\s+/g,' ').trim()};
+}
+function makeIcs(title,d,time,dur){
+  const p=n=>String(n).padStart(2,'0');
+  const ds=x=>`${x.getFullYear()}${p(x.getMonth()+1)}${p(x.getDate())}`;
+  const dts=x=>`${ds(x)}T${p(x.getHours())}${p(x.getMinutes())}00`;
+  const now=new Date();
+  const stamp=`${now.getUTCFullYear()}${p(now.getUTCMonth()+1)}${p(now.getUTCDate())}T${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}Z`;
+  let L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Assistent//DE','BEGIN:VEVENT','UID:'+uid()+'@assistent','DTSTAMP:'+stamp,'SUMMARY:'+title.replace(/([,;\\])/g,'\\$1')];
+  if(time){const st=new Date(d);st.setHours(time.h,time.m,0,0);const en=new Date(st.getTime()+(dur||60)*60000);L.push('DTSTART:'+dts(st),'DTEND:'+dts(en),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+title.replace(/([,;\\])/g,'\\$1'),'TRIGGER:-PT15M','END:VALARM')}
+  else{const en=new Date(d);en.setDate(en.getDate()+1);L.push('DTSTART;VALUE=DATE:'+ds(d),'DTEND;VALUE=DATE:'+ds(en))}
+  L.push('END:VEVENT','END:VCALENDAR');return L.join('\r\n');
+}
+
+/* ================= Wetter ================= */
+function wmo(c){
+  if(c===0)return['☀️','klar'];if(c===1)return['🌤️','überwiegend klar'];if(c===2)return['⛅','teils bewölkt'];if(c===3)return['☁️','bedeckt'];
+  if(c===45||c===48)return['🌫️','Nebel'];if(c>=51&&c<=57)return['🌦️','Nieselregen'];if(c>=61&&c<=67)return['🌧️','Regen'];
+  if(c>=71&&c<=77)return['🌨️','Schnee'];if(c>=80&&c<=82)return['🌦️','Regenschauer'];if(c===85||c===86)return['🌨️','Schneeschauer'];
+  if(c>=95)return['⛈️','Gewitter'];return['🌡️','unbekannt'];
+}
+async function getWeather(city,off){
+  let lat,lon,name;
+  const cc=city||cfg.city;
+  if(cc){
+    const g=await(await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=de&name='+enc(cc))).json();
+    if(!g.results||!g.results.length)return null;
+    lat=g.results[0].latitude;lon=g.results[0].longitude;name=g.results[0].name;
+  }else{
+    const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:9000}));
+    lat=p.coords.latitude;lon=p.coords.longitude;name='Dein Standort';
+  }
+  const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`)).json();
+  const rows=w.daily.time.map((day,i)=>{const [e,txt]=wmo(w.daily.weather_code[i]);return{day:i===0?'Heute':new Date(day).toLocaleDateString('de-DE',{weekday:'short'}),e,txt,tmax:Math.round(w.daily.temperature_2m_max[i]),tmin:Math.round(w.daily.temperature_2m_min[i]),p:w.daily.precipitation_probability_max[i]??0}});
+  const [ce,ct]=wmo(w.current.weather_code);
+  return {name,off,rows,cur:off===0?{t:Math.round(w.current.temperature_2m),e:ce,txt:ct}:null};
+}
+
+/* ================= Tabellen ================= */
+const curT=()=>tables[active];
+function createTable(name,cols){tables.push({name,cols,rows:[cols.map(()=>'')]});active=tables.length-1;persist();renderTables()}
+function findTable(n){n=n.toLowerCase();return tables.findIndex(t=>t.name.toLowerCase()===n)>=0?tables.findIndex(t=>t.name.toLowerCase()===n):tables.findIndex(t=>t.name.toLowerCase().includes(n)||n.includes(t.name.toLowerCase()))}
+function colIdx(t,n){n=n.toLowerCase().trim();let i=t.cols.findIndex(c=>c.toLowerCase()===n);if(i<0)i=t.cols.findIndex(c=>c.toLowerCase().includes(n)||(n.length>2&&n.includes(c.toLowerCase())));return i}
+function addRow(vals){const t=curT();if(!t)return false;const r=t.cols.map((_,i)=>vals&&vals[i]!==undefined?vals[i]:'');
+  if(t.rows.length===1&&t.rows[0].every(x=>x==='')&&vals&&vals.length)t.rows[0]=r;else t.rows.push(r);persist();renderTables();return true}
+function addCol(name){const t=curT();if(!t)return false;t.cols.push(name||'Spalte '+(t.cols.length+1));t.rows.forEach(r=>r.push(''));persist();renderTables();return true}
+function colSum(t,ci){let s=0,n=0;for(const r of t.rows){const v=r[ci];if(v===''||v==null)continue;const x=parseNum(v);if(isNaN(x))return null;s+=x;n++}return n?s:null}
+function exportCSV(){
+  const t=curT();if(!t)return false;
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const csv='\ufeff'+[t.cols,...t.rows].map(r=>r.map(q).join(';')).join('\r\n');
+  share(new Blob([csv],{type:'text/csv;charset=utf-8'}),t.name.replace(/\W+/g,'_')+'.csv','text/csv');return true;
+}
+function renderTables(){
+  const tt=$('#ttabs');tt.innerHTML='';
+  tables.forEach((t,i)=>{const b=document.createElement('button');b.className='chip'+(i===active?' on':'');b.textContent=t.name;b.onclick=()=>{active=i;persist();renderTables()};tt.appendChild(b)});
+  const v=$('#tview');
+  if(!tables.length){v.innerHTML='<div class="card small">Noch keine Tabelle. Tippe auf „+ Tabelle“ oder sag „Erstelle Tabelle Einkauf mit Spalten Artikel, Menge, Preis“.</div>';return}
+  if(active>=tables.length)active=0;
+  const t=curT();
+  let h='<div class="scroll"><table><thead><tr>';
+  t.cols.forEach((c,i)=>h+=`<th><input data-h="${i}" value="${esc(c)}"></th>`);
+  h+='<th class="d"></th></tr></thead><tbody>';
+  t.rows.forEach((r,ri)=>{h+='<tr>';t.cols.forEach((c,ci)=>h+=`<td><input data-r="${ri}" data-c="${ci}" value="${esc(r[ci]??'')}" inputmode="text"></td>`);h+=`<td class="d"><button class="x" data-del="${ri}">✕</button></td></tr>`});
+  h+='</tbody>';
+  const sums=t.cols.map((_,i)=>colSum(t,i));
+  if(sums.some(s=>s!==null))h+='<tfoot><tr>'+sums.map(s=>`<td>${s===null?'':'Σ '+fmt(s)}</td>`).join('')+'<td></td></tr></tfoot>';
+  h+='</table></div>';
+  v.innerHTML=h;
+  $$('input[data-h]',v).forEach(i=>i.onchange=()=>{t.cols[+i.dataset.h]=i.value;persist();renderTables()});
+  $$('input[data-r]',v).forEach(i=>i.onchange=()=>{t.rows[+i.dataset.r][+i.dataset.c]=i.value;persist();renderTables()});
+  $$('button[data-del]',v).forEach(b=>b.onclick=()=>{t.rows.splice(+b.dataset.del,1);if(!t.rows.length)t.rows.push(t.cols.map(()=>''));persist();renderTables()});
+}
+$('#newT').onclick=()=>{const n=prompt('Name der Tabelle?','Tabelle '+(tables.length+1));if(!n)return;const c=prompt('Spalten (mit Komma getrennt)?','Spalte 1, Spalte 2, Spalte 3');createTable(n,(c?c.split(',').map(x=>x.trim()).filter(Boolean):['Spalte 1','Spalte 2']))};
+$('#addRow').onclick=()=>{if(!addRow())toast('Erst eine Tabelle erstellen.')};
+$('#addCol').onclick=()=>{if(!addCol())toast('Erst eine Tabelle erstellen.')};
+$('#exp').onclick=()=>{if(!exportCSV())toast('Keine Tabelle vorhanden.')};
+$('#delT').onclick=()=>{if(curT()&&confirm('Tabelle „'+curT().name+'“ löschen?')){tables.splice(active,1);active=0;persist();renderTables()}};
+
+/* ================= Listen ================= */
+function findList(n){n=n.toLowerCase().replace(/^(die|der|meine|meiner|mein)\s+/,'').trim();return lists.find(l=>l.name.toLowerCase()===n)||lists.find(l=>l.name.toLowerCase().includes(n)||n.includes(l.name.toLowerCase()))}
+function getOrMakeList(n){let l=findList(n);if(!l&&/liste|einkauf|aufgabe|todo|to-do|besorg/i.test(n)){l={name:cap(n.replace(/^(die|der|meine|meiner)\s+/i,'')),items:[]};lists.push(l)}return l}
+function renderLists(){
+  const el=$('#listsView');el.innerHTML='';
+  if(!lists.length)el.innerHTML='<div class="card small">Keine Listen vorhanden.</div>';
+  lists.forEach((L,li)=>{
+    const c=document.createElement('div');c.className='card';
+    const open=L.items.filter(i=>!i.d).length;
+    c.innerHTML=`<div class="lh"><b></b><span class="small">${open} offen</span><button class="x" data-clr title="Erledigte entfernen">🧹</button><button class="x" data-del title="Liste löschen">🗑</button></div><div class="items"></div><div class="row" style="margin-top:8px"><input placeholder="Neuer Eintrag" enterkeyhint="done"><button class="btn">+</button></div>`;
+    c.querySelector('b').textContent=L.name;
+    const it=c.querySelector('.items');
+    L.items.forEach((x,xi)=>{
+      const d=document.createElement('div');d.className='item'+(x.d?' done':'');
+      d.innerHTML='<input type="checkbox"><span></span><button class="x">✕</button>';
+      d.querySelector('input').checked=!!x.d;d.querySelector('span').textContent=x.t;
+      d.querySelector('input').onchange=e=>{x.d=e.target.checked;persist();renderLists()};
+      d.querySelector('button').onclick=()=>{L.items.splice(xi,1);persist();renderLists()};
+      it.appendChild(d);
+    });
+    const inp=c.querySelector('input[placeholder]');
+    const add=()=>{const v=inp.value.trim();if(!v)return;L.items.push({t:v,d:false});persist();renderLists()};
+    c.querySelector('.btn').onclick=add;inp.addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+    c.querySelector('[data-clr]').onclick=()=>{L.items=L.items.filter(i=>!i.d);persist();renderLists()};
+    c.querySelector('[data-del]').onclick=()=>{if(confirm('Liste „'+L.name+'“ löschen?')){lists.splice(li,1);persist();renderLists()}};
+    el.appendChild(c);
+  });
+}
+$('#newList').onclick=()=>{const n=prompt('Name der Liste?');if(n){lists.push({name:cap(n.trim()),items:[]});persist();renderLists()}};
+
+/* ================= Notizen ================= */
+function renderNotes(){
+  const q=$('#noteQ').value.trim().toLowerCase();
+  const n=$('#nlist');n.innerHTML='';
+  const arr=notes.filter(x=>!q||x.t.toLowerCase().includes(q));
+  if(!arr.length){n.innerHTML='<div class="card small">Keine Notizen.</div>';return}
+  arr.forEach(x=>{
+    const d=document.createElement('div');d.className='card note';
+    d.innerHTML='<div style="flex:1"><span></span><time></time></div><button class="x">✕</button>';
+    d.querySelector('span').textContent=x.t;
+    d.querySelector('time').textContent=new Date(x.ts).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'});
+    d.querySelector('button').onclick=()=>{notes=notes.filter(y=>y.id!==x.id);persist();renderNotes()};
+    n.appendChild(d);
+  });
+}
+$('#noteQ').oninput=renderNotes;
+$('#addNote').onclick=()=>{const v=$('#newNote').value.trim();if(!v)return;notes.unshift({id:uid(),t:v,ts:Date.now()});$('#newNote').value='';persist();renderNotes()};
+
+/* ================= Umrechnen / Rechnen ================= */
+const UN={km:['l',1000],kilometer:['l',1000],meter:['l',1],m:['l',1],zentimeter:['l',.01],cm:['l',.01],meilen:['l',1609.344],meile:['l',1609.344],zoll:['l',.0254],fuß:['l',.3048],
+  kg:['m',1],kilo:['m',1],kilogramm:['m',1],gramm:['m',.001],g:['m',.001],pfund:['m',.5],pound:['m',.45359237],unzen:['m',.028349523],
+  liter:['v',1],milliliter:['v',.001],ml:['v',.001],gallonen:['v',3.785411784]};
+function conv(c){
+  const m=c.replace(/°|grad\s+/gi,'').match(/(\d+(?:[.,]\d+)?)\s*([a-zäöüß]+)\s+(?:in|zu|nach|to)\s+([a-zäöüß]+)/i);
+  if(!m)return null;
+  const n=parseFloat(m[1].replace(',','.')),a=m[2].toLowerCase(),b=m[3].toLowerCase();
+  if(/^celsius|^c$/.test(a)&&/^fahrenheit|^f$/.test(b))return `${fmt(n)} °C = ${fmt(n*9/5+32)} °F`;
+  if(/^fahrenheit|^f$/.test(a)&&/^celsius|^c$/.test(b))return `${fmt(n)} °F = ${fmt((n-32)*5/9)} °C`;
+  if(UN[a]&&UN[b]&&UN[a][0]===UN[b][0])return `${fmt(n)} ${a} = ${fmt(n*UN[a][1]/UN[b][1])} ${b}`;
+  return null;
+}
+function calc(c){
+  let e=c.toLowerCase().replace(/^(?:was ist|wie viel ist|wieviel ist|wie viel sind|wieviel sind|rechne|berechne|ergebnis von|calc(?:ulate)?|what is)\s+/,'');
+  e=e.replace(/(\d+(?:[.,]\d+)?)\s*(?:prozent|%)\s*von\s*(\d+(?:[.,]\d+)?)/g,'($1/100*$2)');
+  e=e.replace(/wurzel aus\s*(\d+(?:[.,]\d+)?)/g,'Math.sqrt($1)');
+  e=e.replace(/(\d),(\d)/g,'$1.$2').replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\bgeteilt durch\b|\bdurch\b|÷/g,'/').replace(/\bmal\b|×/g,'*').replace(/(\d)\s*x\s*(\d)/g,'$1*$2').replace(/\bhoch\b/g,'**').replace(/\bklammer auf\b/g,'(').replace(/\bklammer zu\b/g,')');
+  if(!/\d/.test(e))return null;
+  if(!/^[\d+\-*/().\s]*$/.test(e.replace(/Math\.sqrt/g,'')))return null;
+  try{const r=Function('"use strict";return ('+e+')')();if(typeof r==='number'&&isFinite(r))return fmt(r)}catch(x){}
+  return null;
+}
+const JOKES=['Warum können Programmierer Halloween und Weihnachten nicht auseinanderhalten? Weil Oct 31 gleich Dec 25 ist.','Es gibt 10 Arten von Menschen: die, die Binär verstehen, und die, die es nicht tun.','Ein SQL-Statement geht in eine Bar, geht zu zwei Tischen und fragt: Darf ich mich zu euch JOINen?','Der Computer sagt zum Programmierer: Du bist nicht mein Typ. Der Programmierer: Dann cast mich eben.','Warum mögen Entwickler dunkle Themes? Weil Licht Bugs anzieht.'];
+const LANGS={englisch:'en',deutsch:'de',russisch:'ru',polnisch:'pl',französisch:'fr',spanisch:'es',italienisch:'it',türkisch:'tr',ukrainisch:'uk',niederländisch:'nl',portugiesisch:'pt',arabisch:'ar',chinesisch:'zh-CN',japanisch:'ja'};
+const ENGINES={google:['https://www.google.com/search?q=','Google'],youtube:['https://www.youtube.com/results?search_query=','YouTube'],wikipedia:['https://de.wikipedia.org/w/index.php?search=','Wikipedia'],amazon:['https://www.amazon.de/s?k=','Amazon'],ebay:['https://www.ebay.de/sch/i.html?_nkw=','eBay'],bing:['https://www.bing.com/search?q=','Bing'],duckduckgo:['https://duckduckgo.com/?q=','DuckDuckGo'],maps:['maps://?q=','Karten'],karten:['maps://?q=','Karten']};
+
+const HELP=`🔎 Suchen: „Suche nach …“, „YouTube …“, „Wikipedia …“, „Amazon …“, „Bilder von …“, „Übersetze … ins Englische“
+📱 Apps: „Öffne Kalender / Karten / Mail / Nachrichten / Musik / Fotos / WhatsApp / Spotify …“ oder „Öffne google.de“
+📅 Termine: „Termin Zahnarzt morgen um 15 Uhr“ → Kalender-Eintrag
+✉️ Senden: „Schreibe Mail an max at gmail punkt com Betreff Hallo Text …“, „SMS an 0171… Text …“, „Ruf 0171… an“
+🗺 Karten: „Navigiere nach Freiburg“, „Restaurants in der Nähe“
+🌤 Wetter: „Wetter“, „Wetter in Berlin“, „Wetter morgen in Paris“
+⏱ Timer: „Timer 10 Minuten Nudeln“, „Erinnere mich in 20 Minuten an …“
+✅ Listen: „Füge Milch zur Einkaufsliste hinzu“, „Aufgabe …“, „Erledigt Milch“, „Was steht auf der Einkaufsliste“
+📊 Tabellen: „Erstelle Tabelle …“, „Zeile hinzufügen …“, „Spalte hinzufügen …“, „Summe Preis“, „Sortiere nach …“, „Tabelle exportieren“
+📝 Notizen: „Notiz …“, „Zeige Notizen“
+🧮 Rechnen: „Was ist 15 mal 7“, „20 Prozent von 150“, „5 km in Meilen“
+🎲 Extras: „Würfel“, „Münze werfen“, „Zufallszahl“, „Witz“, „Wie spät ist es“, „Kopiere …“, „Dunkelmodus“
+⚡ Eigene Befehle unter Mehr anlegen (z. B. „Ruf Mama“ → tel:+49…).`;
+$('#helpText').textContent=HELP;
+
+/* ================= Befehls-Router ================= */
+async function route(c){
+  const t=c.toLowerCase();let m;
+  // Eigene Befehle zuerst
+  for(const cu of customs){
+    const p=cu.p.toLowerCase().trim();
+    if(p&&(t===p||t.startsWith(p+' '))){
+      const rest=c.slice(p.length).trim();
+      const url=cu.url.includes('{q}')?cu.url.replace('{q}',enc(rest)):cu.url;
+      return {a:(cu.icon||'⚡')+' '+cu.p,link:url,auto:true};
+    }
+  }
+  if(/^(hilfe|help|befehle|was kannst du|помощь)/.test(t))return {a:HELP};
+  if(/^(hallo|hi|hey|moin|servus|guten (morgen|tag|abend)|привет|hello)$/.test(t))return {a:'Hallo'+(cfg.name?' '+cfg.name:'')+'! Wie kann ich helfen?'};
+  if(/^(danke|vielen dank|dankeschön|thanks|спасибо)/.test(t))return {a:'Gern geschehen!'};
+  if(/(wie spät|uhrzeit|wie viel uhr|wieviel uhr|what time|который час)/.test(t))return {a:'Es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.'};
+  if(/(welcher tag ist|welches datum|den wievielten|what date|what day|welcher wochentag)/.test(t))return {a:'Heute ist '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'.'};
+  if(/(dunkelmodus|dunklen modus|dark mode|dunkles design)/.test(t)){cfg.theme='dark';applyTheme();persist();syncSettings();return {a:'Dunkelmodus aktiviert.'}}
+  if(/(hellmodus|hellen modus|light mode|helles design)/.test(t)){cfg.theme='light';applyTheme();persist();syncSettings();return {a:'Hellmodus aktiviert.'}}
+
+  // Würfel, Münze, Zufall, Witz
+  if(/^(würfel|würfle|wirf einen würfel|roll)/.test(t)){return {a:'🎲 '+(1+Math.floor(Math.random()*6))}}
+  if(/(münze|kopf oder zahl)/.test(t))return {a:'🪙 '+(Math.random()<.5?'Kopf':'Zahl')};
+  if((m=c.match(/zufallszahl(?:\s+(?:zwischen|von)\s+(\d+)\s+(?:und|bis)\s+(\d+))?/i))){const a=m[1]?+m[1]:1,b=m[2]?+m[2]:100;return {a:'🎯 '+(Math.min(a,b)+Math.floor(Math.random()*(Math.abs(b-a)+1)))}}
+  if(/(witz|joke|шутк)/.test(t))return {a:JOKES[Math.floor(Math.random()*JOKES.length)]};
+  if((m=c.match(/^(?:kopiere|copy)\s+(.+)$/i))){try{await navigator.clipboard.writeText(m[1]);return {a:'In die Zwischenablage kopiert: '+m[1]}}catch(e){return {a:'Kopieren war nicht erlaubt – tippe zuerst irgendwo auf die App und versuche es erneut.'}}}
+
+  // Umrechnen & Rechnen
+  const cv=conv(c);if(cv)return {a:cv};
+  if(/^(?:was ist|wie viel|wieviel|rechne|berechne|calc|what is)|^[\d\s.,+\-*/x×÷()%^]+$|\d\s*(?:plus|minus|mal|geteilt|prozent)/i.test(c)){const r=calc(c);if(r!==null)return {a:'= '+r}}
+
+  // Timer / Erinnerung
+  if(/(timer|таймер|erinnere mich in|erinner mich in|wecke mich in|in \d+ (?:sekunden|minuten|stunden) )/.test(t+' ')){
+    const du=parseDur(t);
+    if(du&&du.s>0){
+      let label=du.rest.replace(/\b(stelle|stell|setze|starte|einen|ein|timer|auf|für|erinnere|erinner|mich|an|in|wecke|nach|von|dass|ich)\b/g,' ').replace(/\s+/g,' ').trim();
+      label=label?cap(label):fmtDur(du.s);
+      addTimer(du.s,label);
+      return {a:`⏱ Timer gestellt: ${fmtDur(du.s)}${label!==fmtDur(du.s)?' – '+label:''}. (Die App muss offen bleiben, damit es klingelt.)`};
+    }
+  }
+
+  // Termin → Kalender
+  if(!/^(?:öffne|oeffne|open|zeige|zeig)\s+(?:den\s+|meinen\s+)?kalender$/.test(t)&&(/termin|ereignis/.test(t)||/kalender.*(eintrag|eintragen|hinzu|erstell)|(trag|trage).*ein$/.test(t))){
+    const w=parseWhen(c);
+    let title=w.rest.replace(/\b(erstelle|erstellen|erstell|trage|trag|neuen|neuer|neue|neues|einen|ein|termin|ereignis|eintrag|eintragen|hinzufügen|in den kalender|im kalender|in meinen kalender|kalender|für|am|um|uhr|mit|namens|und|gegen|ab|nächsten|mir)\b/g,' ').replace(/\s+/g,' ').trim();
+    title=title?cap(title):'Termin';
+    const ics=makeIcs(title,w.date,w.time,60);
+    const when=w.date.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+(w.time?', '+String(w.time.h).padStart(2,'0')+':'+String(w.time.m).padStart(2,'0')+' Uhr':' (ganztägig)');
+    return {a:`📅 Termin „${title}“ – ${when}. Tippe auf den Button, dann „Alle hinzufügen“ bzw. „Hinzufügen“ im Kalender.`,ics,name:title.replace(/\W+/g,'_')};
+  }
+  if(/(was habe ich|welche termine|meine termine|was steht an)/.test(t))return {a:'Kalender wird geöffnet …',link:'calshow://',auto:true};
+
+  // Mail
+  if((m=c.match(/^(?:schreibe|schreib|sende|schicke|verfasse|write|send)\s+(?:eine?\s+)?(?:e-?mail|mail)\s+(?:an|to)\s+(.+?)(?:\s+(?:betreff|mit dem betreff|subject)\s+(.+?))?(?:\s+(?:text|inhalt|nachricht|body)\s+(.+))?$/i))){
+    let to=m[1].toLowerCase().replace(/\s+(?:at|ät|et)\s+/g,'@').replace(/\s+punkt\s+/g,'.').replace(/\s/g,'');
+    if(!to.includes('@'))to='';
+    const link='mailto:'+to+'?subject='+enc(m[2]?cap(m[2]):'')+'&body='+enc(m[3]?cap(m[3]):'');
+    return {a:'✉️ E-Mail wird vorbereitet'+(to?' an '+to:'')+(to?'':' (Empfänger bitte in Mail eintragen)')+' …',link,auto:true,label:'Mail öffnen'};
+  }
+  // SMS
+  if((m=c.match(/^(?:schreibe|schreib|sende|schicke)\s+(?:eine?\s+)?(?:sms|nachricht|textnachricht|imessage)\s+an\s+(.+?)(?:\s+(?:text|inhalt|nachricht|body|mit dem text)\s+(.+))?$/i))){
+    const num=m[1].replace(/[\s-]/g,'');const isNum=/^\+?\d{4,}$/.test(num);
+    return {a:'💬 Nachricht'+(isNum?' an '+num:' (Empfänger bitte in Nachrichten wählen)')+' …',link:'sms:'+(isNum?num:'')+'&body='+enc(m[2]?cap(m[2]):''),auto:true,label:'Nachrichten öffnen'};
+  }
+  // Anrufen / FaceTime
+  if((m=c.match(/^(?:ruf|rufe)\s+(.+?)\s+an$/i))||(m=c.match(/^(?:anrufen|anruf|call)\s+(.+)$/i))){
+    const num=m[1].replace(/[\s-]/g,'');
+    if(/^\+?\d{3,}$/.test(num))return {a:'📞 Anruf '+m[1]+' …',link:'tel:'+num,auto:true,label:'Anrufen'};
+    return {a:`Den Namen „${m[1]}“ kann ich nicht auflösen. Sag die Nummer oder lege unter Mehr › Eigene Befehle z. B. „ruf ${m[1].toLowerCase()}“ → tel:+49… an.`};
+  }
+  if((m=c.match(/^facetime\s+(.+)$/i))){const num=m[1].replace(/[\s-]/g,'');return {a:'FaceTime …',link:'facetime:'+num,auto:true}}
+
+  // Wetter
+  if(/(wetter|weather|погода)/.test(t)){
+    const off=/übermorgen/.test(t)?2:/morgen/.test(t)?1:0;
+    let city=(c.match(/(?:wetter|weather|погода)(?:\s+(?:in|für|bei|von|at))?\s*(.*)$/i)||[,''])[1];
+    city=city.replace(/\b(heute|morgen|übermorgen|aktuell|jetzt|am|wie|ist|wird|das|der|die|in|für|bei)\b/gi,' ').replace(/\s+/g,' ').trim();
+    if(!city){const p=c.match(/(?:in|für|bei)\s+([A-ZÄÖÜ][\wäöüß-]+(?:\s+[A-ZÄÖÜ][\wäöüß-]+)*)/);if(p)city=p[1]}
+    try{
+      const w=await getWeather(city,off);
+      if(!w)return {a:`Den Ort „${city}“ habe ich nicht gefunden.`};
+      const r=w.rows[off];
+      const dayTxt=off===0?'Heute':off===1?'Morgen':'Übermorgen';
+      const a=(off===0?`In ${w.name} sind es aktuell ${w.cur.t} Grad, ${w.cur.txt}. `:'')+`${dayTxt} ${r.tmin} bis ${r.tmax} Grad, ${r.txt}, Regenwahrscheinlichkeit ${r.p} Prozent.`;
+      return {a,w};
+    }catch(e){
+      return {a:'Das Wetter konnte nicht geladen werden. Erlaube den Standort oder sag eine Stadt („Wetter in Freiburg“) bzw. trage unter Mehr eine Heimatstadt ein.',link:'weather://',label:'Wetter-App öffnen'};
+    }
+  }
+
+  // Übersetzen
+  if((m=c.match(/^(?:übersetze|übersetzen|translate)\s+(.+)\s+(?:ins|in das|in die|auf|nach|to|into)\s+(\S+)$/i))){
+    const w=m[2].toLowerCase();const k=Object.keys(LANGS).find(k=>w.startsWith(k));
+    if(k)return {a:`Übersetze „${m[1]}“ ins ${cap(k)}e …`,link:'https://translate.google.com/?sl=auto&tl='+LANGS[k]+'&text='+enc(m[1])+'&op=translate',auto:true,label:'Übersetzer öffnen'};
+  }
+
+  // Maps / Navigation
+  if((m=c.match(/^(?:navigiere|navigation|route|wegbeschreibung|fahre|führe mich|navigate)\s*(?:mich\s+)?(?:nach|zu|zum|zur|to)?\s*(.+)$/i)))
+    return {a:'🗺 Route nach '+m[1]+' …',link:'maps://?daddr='+enc(m[1])+'&dirflg=d',auto:true,label:'Route starten'};
+  if((m=c.match(/^(.+?)\s+(?:in der nähe|in meiner nähe|nearby|in der umgebung)$/i)))
+    return {a:'🗺 Suche in der Nähe: '+m[1],link:'maps://?q='+enc(m[1]),auto:true,label:'In Karten öffnen'};
+  if((m=c.match(/^(?:zeige|zeig|wo ist|wo liegt|karte von|show)\s+(?:mir\s+)?(.+?)\s+(?:auf der karte|in karten|on the map)$/i))||(m=c.match(/^(?:wo ist|wo liegt)\s+(.+)$/i)))
+    return {a:'🗺 '+m[1]+' …',link:'maps://?q='+enc(m[1]),auto:true,label:'In Karten öffnen'};
+
+  // Listen
+  if((m=c.match(/^(?:füge|setze|schreibe|schreib|packe|tue|stelle|add|put)\s+(.+?)\s+(?:zu(?:r|m)?|auf|in|to)\s+(?:(?:der|die|dem|den|meine|meiner|meinen|my)\s+)?(.+?)(?:\s+hinzu(?:fügen)?)?$/i))&&!/^(?:zeile|spalte|notiz|timer)/i.test(m[1])){
+    const L=getOrMakeList(m[2]);
+    if(L){const items=/ und /i.test(m[1])&&!/\d/.test(m[1])?m[1].split(/\s+und\s+/i):[m[1]];items.forEach(x=>L.items.push({t:cap(x.trim()),d:false}));persist();renderLists();return {a:`✅ „${items.map(x=>cap(x.trim())).join(', ')}“ zu ${L.name} hinzugefügt.`}}
+  }
+  if((m=c.match(/^(?:neue\s+)?(?:aufgabe|todo|to-do|task)\s*[:,]?\s*(.+)$/i))||(m=c.match(/^(?:erinnere mich an|erinner mich an|remind me to)\s+(.+)$/i))){
+    let L=lists.find(l=>/aufgaben/i.test(l.name));if(!L){L={name:'Aufgaben',items:[]};lists.push(L)}
+    L.items.push({t:cap(m[1]),d:false});persist();renderLists();return {a:'✅ Aufgabe hinzugefügt: '+cap(m[1])};
+  }
+  if((m=c.match(/^(?:erledigt|hake|streiche|fertig|done)\s+(?:ab\s+)?(.+?)(?:\s+ab)?$/i))){
+    const q=m[1].toLowerCase();
+    for(const L of lists){const it=L.items.find(i=>!i.d&&(i.t.toLowerCase().includes(q)||q.includes(i.t.toLowerCase())));if(it){it.d=true;persist();renderLists();return {a:`✔️ „${it.t}“ in ${L.name} erledigt.`}}}
+    return {a:`Ich habe „${m[1]}“ in keiner Liste gefunden.`};
+  }
+  if((m=c.match(/^(?:entferne|lösche|nimm)\s+(.+?)\s+(?:von|aus|aus der|von der)\s+(?:der\s+|die\s+|meiner\s+)?(.+)$/i))){
+    const L=findList(m[2]);
+    if(L){const q=m[1].toLowerCase();const i=L.items.findIndex(x=>x.t.toLowerCase().includes(q));if(i>=0){const x=L.items.splice(i,1)[0];persist();renderLists();return {a:`🗑 „${x.t}“ von ${L.name} entfernt.`}}return {a:`„${m[1]}“ steht nicht auf ${L.name}.`}}
+  }
+  if((m=c.match(/^(?:erstelle|erstell|neue|lege|mach)\s+(?:eine\s+)?(?:neue\s+)?liste\s+(?:namens\s+)?(.+?)(?:\s+an)?$/i))){
+    lists.push({name:cap(m[1]),items:[]});persist();renderLists();showTab('lists');return {a:`✅ Liste „${cap(m[1])}“ erstellt.`};
+  }
+  if(/(liste|aufgaben|todo|to-do)/.test(t)&&/(zeig|öffne|lies|was steht|anzeigen|was muss|vorlesen)/.test(t)&&!/tabelle/.test(t)){
+    const nm=(c.match(/(\w*liste\w*|aufgaben|todo)/i)||[''])[0];
+    const L=nm&&findList(nm);
+    showTab('lists');
+    if(L){const open=L.items.filter(i=>!i.d).map(i=>i.t);return {a:open.length?`${L.name}: ${open.join(', ')}.`:`${L.name} ist leer.`}}
+    return {a:'Hier sind deine Listen.'};
+  }
+  if(/^(?:lösche|entferne)\s+(?:die\s+)?liste\s+(.+)$/i.test(c)){
+    const L=findList(c.match(/liste\s+(.+)$/i)[1]);if(L){lists=lists.filter(x=>x!==L);persist();renderLists();return {a:`Liste „${L.name}“ gelöscht.`}}
+  }
+
+  // Notizen
+  if((m=c.match(/^(?:notiz|notiere|notier|merke dir|merk dir|schreib auf|schreibe auf|note|заметка)\s*[:,]?\s*(.+)$/i))){
+    notes.unshift({id:uid(),t:cap(m[1]),ts:Date.now()});persist();renderNotes();return {a:'📝 Notiz gespeichert: '+cap(m[1])};
+  }
+  if(/^(?:zeige|zeig|öffne|lies)\s+(?:mir\s+)?(?:meine\s+)?notizen$/.test(t)){showTab('notes');return {a:'Hier sind deine Notizen.'}}
+
+  // Tabellen
+  if(/tabelle|zeile|spalte|summe|sortier/.test(t)){
+    if(/(erstell|neue|anlegen|leg .* an|generier|mach)/.test(t)&&/tabelle/.test(t)&&!/(zeile|spalte)\s+hinzu/.test(t)){
+      let name='Tabelle '+(tables.length+1),cols=['Spalte 1','Spalte 2','Spalte 3'];
+      const mc=c.match(/spalten?\s+(.+)$/i);if(mc)cols=splitList(mc[1]).map(cap);
+      const mn=c.match(/tabelle\s+(?:namens\s+|mit dem namen\s+|mit name\s+)?(.+?)(?:\s+mit\s+(?:den\s+)?spalten?.*)?$/i);
+      if(mn&&mn[1]&&!/^(mit|erstellen|anlegen|an)$/i.test(mn[1])&&!/^spalten?\s/i.test(mn[1]))name=cap(mn[1].replace(/\s+(erstellen|anlegen)$/i,''));
+      createTable(name,cols);showTab('tables');
+      return {a:`📊 Tabelle „${name}“ mit ${cols.length} Spalten erstellt: ${cols.join(', ')}.`};
+    }
+    if((m=c.match(/^(?:summe|gesamtsumme|wie hoch ist die summe)(?:\s+(?:von|der|aus))?(?:\s+spalte)?\s*(.*)$/i))||(m=c.match(/^(?:rechne|berechne)\s+(?:die\s+)?summe(?:\s+(?:von|der))?(?:\s+spalte)?\s*(.*)$/i))){
+      const T=curT();if(!T)return {a:'Es gibt noch keine Tabelle.'};
+      showTab('tables');
+      if(m[1]){const ci=colIdx(T,m[1]);if(ci<0)return {a:`Spalte „${m[1]}“ nicht gefunden.`};const s=colSum(T,ci);return {a:s===null?`Die Spalte „${T.cols[ci]}“ enthält keine Zahlen.`:`Summe ${T.cols[ci]}: ${fmt(s)}`}}
+      const parts=T.cols.map((cn,i)=>({cn,s:colSum(T,i)})).filter(x=>x.s!==null);
+      return {a:parts.length?parts.map(x=>`${x.cn}: ${fmt(x.s)}`).join(', '):'Keine Zahlenspalten gefunden.'};
+    }
+    if((m=c.match(/^sortiere?\s+(?:die\s+)?(?:tabelle\s+)?(?:nach\s+)?(.+?)(?:\s+(auf|ab)steigend)?$/i))){
+      const T=curT();if(!T)return {a:'Es gibt noch keine Tabelle.'};
+      const ci=colIdx(T,m[1]);if(ci<0)return {a:`Spalte „${m[1]}“ nicht gefunden.`};
+      const dir=m[2]&&m[2].toLowerCase()==='ab'?-1:1;
+      T.rows.sort((a,b)=>{const x=parseNum(a[ci]),y=parseNum(b[ci]);return (!isNaN(x)&&!isNaN(y)?x-y:String(a[ci]).localeCompare(String(b[ci]),'de'))*dir});
+      persist();renderTables();showTab('tables');return {a:`Tabelle nach „${T.cols[ci]}“ ${dir===1?'auf':'ab'}steigend sortiert.`};
+    }
+    if(/(letzte zeile).*(lösch|entfern)|(lösch|entfern).*(letzte zeile)/.test(t)){
+      const T=curT();if(!T||!T.rows.length)return {a:'Keine Zeile vorhanden.'};T.rows.pop();if(!T.rows.length)T.rows.push(T.cols.map(()=>''));persist();renderTables();return {a:'Letzte Zeile gelöscht.'};
+    }
+    if(/zeile/.test(t)&&!/(lösch|entfern)/.test(t)&&(m=c.match(/zeile\s*(?:hinzufügen|einfügen)?\s*[:,]?\s*(.*)$/i)||c.match(/^(?:füge|trage|schreibe)\s+(?:eine\s+)?(?:neue\s+)?zeile\s*(.*)$/i))){
+      const vals=m[1]?splitList(m[1].replace(/\s*hinzu(?:fügen)?$/i,'').replace(/\s+ein$/i,'')).map(cap):[];
+      if(!addRow(vals))return {a:'Es gibt noch keine Tabelle. Sag zuerst „Erstelle Tabelle“.'};
+      showTab('tables');return {a:'➕ Zeile hinzugefügt'+(vals.length?': '+vals.join(', '):'')+'.'};
+    }
+    if(/spalte/.test(t)&&(m=c.match(/spalte\s*(?:hinzufügen|einfügen)?\s*[:,]?\s*(.*)$/i))){
+      const nm=m[1].replace(/\s*hinzu(?:fügen)?$/i,'');
+      if(!addCol(nm?cap(nm):''))return {a:'Es gibt noch keine Tabelle.'};showTab('tables');return {a:'➕ Spalte hinzugefügt.'};
+    }
+    if(/(export|herunterlad|speicher|teile|download|csv)/.test(t))return {a:exportCSV()?'Tabelle wird exportiert.':'Keine Tabelle vorhanden.'};
+    if(/(lösch|entfern)/.test(t)){if(curT()){const n=curT().name;tables.splice(active,1);active=0;persist();renderTables();return {a:`Tabelle „${n}“ gelöscht.`}}return {a:'Keine Tabelle vorhanden.'}}
+    if((m=c.match(/(?:zeige|zeig|öffne|wechsle zu)\s+(?:die\s+)?tabelle\s+(.+)$/i))){const i=findTable(m[1]);if(i>=0){active=i;persist();renderTables();showTab('tables');return {a:`Tabelle „${tables[i].name}“ geöffnet.`}}}
+    if(/(zeig|öffne|anzeigen)/.test(t)){showTab('tables');return {a:'Hier sind deine Tabellen.'}}
+  }
+
+  // Suche (spezielle Engines)
+  if((m=c.match(/^(?:such(?:e)?\s+)?(?:auf|bei|in|im)\s+(youtube|wikipedia|amazon|ebay|bing|duckduckgo|google|maps|karten)\s+(?:nach\s+)?(.+)$/i))||(m=c.match(/^(youtube|wikipedia|amazon|ebay|bing|duckduckgo)\s+(?:suche\s+)?(?:nach\s+)?(.+)$/i))){
+    const e=ENGINES[m[1].toLowerCase()];return {a:`🔎 ${e[1]}: ${m[2]}`,link:e[0]+enc(m[2]),auto:true,label:e[1]+' öffnen'};
+  }
+  if((m=c.match(/^(?:bilder|fotos|bildersuche|zeige mir bilder|zeig mir bilder)\s+(?:von|über|suche)?\s*(.+)$/i))&&!APPS[m[1].toLowerCase()])
+    return {a:'🖼 Bilder: '+m[1],link:'https://www.google.com/search?tbm=isch&q='+enc(m[1]),auto:true,label:'Bilder öffnen'};
+  if((m=c.match(/^(?:such(?:e)?|google|googel|googeln|search|recherchier\w*|finde|find|погугли|найди|поиск|was ist|wer ist|wer war|wie funktioniert)\s*(?:mir\s+)?(?:(?:im|auf|bei)\s+(?:internet|web|netz|google)\s+)?(?:online\s+)?(?:nach\s+|for\s+)?(.+)$/i))){
+    const pre=c.match(/^(was ist|wer ist|wer war|wie funktioniert)/i);
+    const q=pre?c:m[1];
+    return {a:'🔎 Suche nach: '+q,link:'https://www.google.com/search?q='+enc(q),auto:true,label:'Suchergebnisse öffnen'};
+  }
+
+  // Einstellungen in der App
+  if(/^(?:öffne|zeige|zeig)\s+(?:die\s+)?einstellungen$/.test(t)){showTab('more');return {a:'Einstellungen geöffnet.'}}
+  if(/^(?:zeige|zeig|öffne)\s+(?:die\s+)?(?:eigenen\s+)?befehle$/.test(t)){showTab('more');return {a:HELP}}
+
+  // Apps öffnen
+  if((m=c.match(/^(?:öffne|oeffne|öffnen|open|launch|starte|start|zeige|zeig|gehe zu|geh zu|открой)\s+(?:mir\s+)?(?:die\s+|den\s+|das\s+|my\s+)?(?:app\s+)?(.+?)(?:\s+app)?$/i))){
+    const key=m[1].trim().toLowerCase();
+    if(key==='notizen'&&!/\bapp\b/.test(t)){showTab('notes');return {a:'Hier sind deine Notizen.'}}
+    if(APPS[key])return {a:APPS[key][1]+' wird geöffnet …',link:APPS[key][0],auto:true,label:APPS[key][1]+' öffnen'};
+    const dom=key.replace(/\s+punkt\s+/g,'.').replace(/\s/g,'');
+    if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(dom))return {a:dom+' wird geöffnet …',link:'https://'+dom,auto:true,label:dom+' öffnen'};
+    return {a:`Die App „${m[1]}“ kenne ich noch nicht. Unter Mehr › Eigene Befehle kannst du sie selbst anlegen (App-Link z. B. whatsapp://).`};
+  }
+
+  // Fallback → Websuche anbieten
+  return {a:'Das habe ich nicht verstanden. Tippe auf den Button, um im Internet danach zu suchen, oder sag „Hilfe“.',link:'https://www.google.com/search?q='+enc(c),label:'Im Internet suchen'};
+}
+
+async function handle(raw){
+  const c=clean(String(raw||''));
+  if(!c)return;
+  status('…');
+  let r;
+  try{r=await route(c)}catch(e){r={a:'Da ist etwas schiefgelaufen: '+e.message}}
+  addMsg({u:c,a:r.a,link:r.link,label:r.label,ics:r.ics,name:r.name,w:r.w});
+  say(r.a.split('\n')[0]);
+  status(r.a.length>110?r.a.slice(0,107)+'…':r.a);
+  if(curTab!=='assist')toast(r.a.length>140?r.a.slice(0,137)+'…':r.a);
+  if(r.link&&r.auto&&cfg.auto)setTimeout(()=>launch(r.link),700);
+}
+
+/* ================= Spracherkennung ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,listening=false,gotResult=false,wake=null;
+async function lockScreen(on){try{if(on&&'wakeLock' in navigator)wake=await navigator.wakeLock.request('screen');else if(!on&&wake){wake.release();wake=null}}catch(e){}}
+function setLive(on){$('#mic').classList.toggle('live',on);$('#fab').classList.toggle('live',on)}
+function startListen(){
+  unlockAudio();
+  if(!SR){status('Spracherkennung wird hier nicht unterstützt – nutze Safari oder tippe den Befehl (Tastatur-Mikrofon geht auch).');toast('Spracherkennung nicht verfügbar');return}
+  if(listening){try{rec.stop()}catch(e){}return}
+  try{speechSynthesis.cancel()}catch(e){}
+  rec=new SR();rec.lang=cfg.lang;rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;gotResult=false;
+  rec.onstart=()=>{listening=true;setLive(true);status('Ich höre zu …');$('#heard').textContent=''};
+  rec.onresult=e=>{
+    let txt='',fin=false;
+    for(let i=e.resultIndex;i<e.results.length;i++){txt+=e.results[i][0].transcript;if(e.results[i].isFinal)fin=true}
+    $('#heard').textContent=txt;
+    if(fin&&!gotResult){gotResult=true;handle(txt)}
+  };
+  rec.onerror=e=>{
+    const map={'not-allowed':'Mikrofon-Zugriff verweigert. Erlaube Mikrofon & Spracherkennung in den iPhone-Einstellungen (Safari bzw. Assistent).','service-not-allowed':'Spracherkennung ist nicht erlaubt (iPhone: Einstellungen › Allgemein › Tastatur › Diktierfunktion aktivieren).','no-speech':'Nichts gehört. Tippe erneut aufs Mikrofon.','audio-capture':'Kein Mikrofon gefunden.','network':'Netzwerkfehler bei der Spracherkennung.','aborted':''};
+    const msg=map[e.error];status(msg!==undefined?msg:'Fehler: '+e.error);
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){cfg.loop=false;persist();syncSettings()}
+  };
+  rec.onend=()=>{
+    listening=false;setLive(false);
+    if(cfg.loop&&!document.hidden){setTimeout(()=>{if(!listening&&cfg.loop)startListen()},gotResult?1800:400)}
+    else{lockScreen(false);if($('#status').textContent==='Ich höre zu …')status('Tippe aufs Mikrofon und sprich')}
+  };
+  try{rec.start();if(cfg.loop)lockScreen(true)}catch(e){status('Konnte nicht starten: '+e.message)}
+}
+$('#mic').onclick=startListen;$('#fab').onclick=startListen;
+$('#go').onclick=()=>{unlockAudio();const v=$('#txt').value;$('#txt').value='';handle(v)};
+$('#txt').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
+
+/* ================= Schnellzugriff ================= */
+const TILES=[['📅','Kalender','öffne kalender'],['🗺️','Karten','öffne karten'],['✉️','Mail','öffne mail'],['💬','Nachrichten','öffne nachrichten'],
+  ['🌤️','Wetter','wetter'],['🎵','Musik','öffne musik'],['📷','Fotos','öffne fotos'],['🟢','WhatsApp','öffne whatsapp']];
+function renderTiles(){
+  const el=$('#tiles');el.innerHTML='';
+  TILES.forEach(([i,n,cmd])=>{const b=document.createElement('button');b.className='tile';b.innerHTML=`<b>${i}</b>${esc(n)}`;b.onclick=()=>handle(cmd);el.appendChild(b)});
+  customs.forEach(cu=>{if(cu.url.includes('{q}'))return;const b=document.createElement('button');b.className='tile';b.innerHTML=`<b>${esc(cu.icon||'⚡')}</b>${esc(cu.p)}`;b.onclick=()=>launch(cu.url);el.appendChild(b)});
+}
+function renderChips(){
+  const el=$('#chips');el.innerHTML='';
+  ['Wetter','Timer 10 Minuten','Termin Zahnarzt morgen um 15 Uhr','Füge Milch zur Einkaufsliste hinzu','Erstelle Tabelle Einkauf mit Spalten Artikel, Menge, Preis','Notiz Anna anrufen','Was ist 15 mal 7','Suche nach Pizza Rezept','Hilfe'].forEach(s=>{
+    const b=document.createElement('button');b.className='chip';b.textContent=s;b.onclick=()=>handle(s);el.appendChild(b)});
+}
+
+/* ================= Einstellungen ================= */
+function renderCustoms(){
+  const el=$('#customList');el.innerHTML='';
+  if(!customs.length){el.innerHTML='<div class="small">Noch keine eigenen Befehle.</div>';return}
+  customs.forEach((cu,i)=>{
+    const d=document.createElement('div');d.className='set';
+    d.innerHTML='<label></label><button class="x">✕</button>';
+    d.querySelector('label').textContent=(cu.icon||'⚡')+' '+cu.p+' → '+cu.url;
+    d.querySelector('button').onclick=()=>{customs.splice(i,1);persist();renderCustoms();renderTiles()};
+    el.appendChild(d);
+  });
+}
+$('#cuAdd').onclick=()=>{
+  const p=$('#cuWord').value.trim(),u=$('#cuUrl').value.trim();
+  if(!p||!u){toast('Bitte Befehl und Link ausfüllen.');return}
+  customs.push({p,url:u,icon:$('#cuIcon').value.trim()||'⚡'});persist();
+  $('#cuWord').value=$('#cuUrl').value=$('#cuIcon').value='';renderCustoms();renderTiles();toast('Befehl gespeichert.');
+};
+function syncSettings(){
+  $('#lang').value=cfg.lang;$('#cName').value=cfg.name;$('#cCity').value=cfg.city;$('#cTheme').value=cfg.theme;
+  $('#cSpeak').checked=cfg.speak;$('#cRate').value=cfg.rate;$('#cLoop').checked=cfg.loop;$('#cAuto').checked=cfg.auto;
+  $$('.col').forEach(c=>c.classList.toggle('on',c.dataset.c===cfg.accent));
+  loadVoices();greet();
+}
+ACCENTS.forEach(c=>{const b=document.createElement('button');b.className='col';b.dataset.c=c;b.style.background=c;b.onclick=()=>{cfg.accent=c;applyTheme();persist();syncSettings()};$('#cols').appendChild(b)});
+$('#lang').onchange=e=>{cfg.lang=e.target.value;persist();loadVoices()};
+$('#cName').onchange=e=>{cfg.name=e.target.value.trim();persist();greet()};
+$('#cCity').onchange=e=>{cfg.city=e.target.value.trim();persist()};
+$('#cTheme').onchange=e=>{cfg.theme=e.target.value;applyTheme();persist()};
+$('#cSpeak').onchange=e=>{cfg.speak=e.target.checked;persist()};
+$('#cVoice').onchange=e=>{cfg.voice=e.target.value;persist();say('Hallo, so klinge ich.')};
+$('#cRate').onchange=e=>{cfg.rate=+e.target.value;persist()};
+$('#cLoop').onchange=e=>{cfg.loop=e.target.checked;persist();if(cfg.loop){showTab('assist');if(!listening)startListen()}else{lockScreen(false);if(listening)try{rec.stop()}catch(x){}}};
+$('#cAuto').onchange=e=>{cfg.auto=e.target.checked;persist()};
+
+/* Backup */
+$('#bkExp').onclick=()=>{persist();share(new Blob([JSON.stringify({v:2,cfg,tables,lists,notes,customs},null,1)],{type:'application/json'}),'assistent-backup.json','application/json')};
+$('#bkImp').onclick=()=>$('#bkFile').click();
+$('#bkFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.cfg)Object.assign(cfg,d.cfg);if(d.tables)tables=d.tables;if(d.lists)lists=d.lists;if(d.notes)notes=d.notes;if(d.customs)customs=d.customs;persist();applyTheme();syncSettings();renderAll();toast('Backup geladen.')}catch(x){toast('Datei konnte nicht gelesen werden.')}};
+  r.readAsText(f);e.target.value='';
+};
+
+function renderAll(){renderHist();renderTables();renderLists();renderNotes();renderCustoms();renderTiles();renderChips();renderTimers()}
+
+/* ================= Start ================= */
+applyTheme();syncSettings();renderAll();
+tick();
+if(new URLSearchParams(location.search).get('listen')==='1'){
+  status('Tippe aufs Mikrofon, falls es nicht automatisch startet');
+  setTimeout(startListen,600);
+}
+})();
+</script>
+</body>
+</html>
